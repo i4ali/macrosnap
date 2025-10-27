@@ -252,6 +252,9 @@ struct CustomDailyGoalsView: View {
         do {
             try viewContext.save()
 
+            // Notify AppState that goals changed so UI refreshes
+            appState.notifyGoalsChanged()
+
             // Upload to CloudKit (don't download immediately to avoid overwriting fresh changes)
             Task {
                 await appState.cloudKitSync.syncLocalToCloud()
@@ -282,6 +285,9 @@ struct CustomDailyGoalsView: View {
 
         do {
             try viewContext.save()
+
+            // Notify AppState that goals changed so UI refreshes
+            appState.notifyGoalsChanged()
 
             // Reload default goals
             loadGoals(for: selectedDay)

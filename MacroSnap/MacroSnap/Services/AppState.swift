@@ -86,4 +86,10 @@ class AppState: ObservableObject {
             return []
         }
     }
+
+    /// Notify views that goals have changed
+    /// Call this after updating goals in CoreData to refresh UI
+    func notifyGoalsChanged() {
+        objectWillChange.send()
+    }
 }

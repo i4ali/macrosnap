@@ -613,6 +613,9 @@ struct SettingsView: View {
 
             try viewContext.save()
 
+            // Notify AppState that goals changed so UI refreshes
+            appState.notifyGoalsChanged()
+
             // Upload to CloudKit (don't download immediately to avoid overwriting fresh changes)
             Task {
                 await appState.cloudKitSync.syncLocalToCloud()
