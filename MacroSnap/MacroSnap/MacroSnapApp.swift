@@ -24,6 +24,7 @@ struct MacroSnapApp: App {
                 .tint(appState.themeManager.currentTheme.accentColor)
                 .fullScreenCover(isPresented: .constant(!hasCompletedOnboarding)) {
                     OnboardingView()
+                        .environmentObject(appState)
                 }
                 .onChange(of: scenePhase) { newPhase in
                     if newPhase == .active {

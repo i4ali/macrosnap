@@ -261,6 +261,8 @@ This roadmap outlines the development phases for MacroSnap, from MVP to advanced
 
 #### Quick Improvements
 - [x] Onboarding tutorial (first launch)
+- [x] Notification permission in onboarding
+- [x] Daily streak reminders (push notifications)
 - [ ] Better empty states
 - [ ] Improved Pro upgrade flow
 
@@ -351,7 +353,6 @@ This roadmap outlines the development phases for MacroSnap, from MVP to advanced
 - StoreKit 2
 
 ### Future Considerations
-- **Push Notifications**: Daily reminders (opt-in)
 - **Background Sync**: More aggressive CloudKit sync strategy
 - **Advanced Conflict Resolution**: Smart merge strategies for simultaneous edits
 
@@ -398,5 +399,5 @@ Throughout all phases, maintain these core principles:
 
 ---
 
-**Last Updated**: 2025-10-26
+**Last Updated**: 2025-10-27
 **Target Launch**: Q1 2026 (13 weeks from start)

@@ -182,6 +182,17 @@ class NotificationManager: ObservableObject {
         print("🗑️ Canceled all streak notifications")
     }
 
+    // MARK: - Badge Management
+
+    /// Clear app badge when user opens the app
+    func clearBadge() {
+        Task {
+            try? await notificationCenter.setBadgeCount(0)
+        }
+        notificationCenter.removeDeliveredNotifications(withIdentifiers: [streakNotificationIdentifier])
+        print("🔔 Cleared app badge and delivered notifications")
+    }
+
     // MARK: - Helper Methods
 
     private func hasLoggedToday() -> Bool {
@@ -253,6 +264,10 @@ class NotificationManager: ObservableObject {
 
     /// Call this when app becomes active to refresh notification state
     func refreshNotificationState() async {
+        // Clear badge and delivered notifications when app opens
+        clearBadge()
+
+        // Check authorization and reschedule if needed
         await checkAuthorizationStatus()
         await scheduleNotificationIfNeeded()
     }

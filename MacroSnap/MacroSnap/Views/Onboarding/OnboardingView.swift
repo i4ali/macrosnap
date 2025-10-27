@@ -75,7 +75,15 @@ struct OnboardingView: View {
                     )
                     .tag(4)
 
-                    // Page 6: Pro Features
+                    // Page 6: Notifications
+                    NotificationOnboardingPage(onSkip: {
+                        withAnimation {
+                            currentPage = 6
+                        }
+                    })
+                    .tag(5)
+
+                    // Page 7: Pro Features
                     RingOnboardingPage(
                         iconType: .star,
                         title: "Unlock Pro",
@@ -85,7 +93,7 @@ struct OnboardingView: View {
                         isLastPage: true,
                         onGetStarted: completeOnboarding
                     )
-                    .tag(5)
+                    .tag(6)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 .indexViewStyle(.page(backgroundDisplayMode: .always))
@@ -216,7 +224,7 @@ struct WelcomePageView: View {
 // MARK: - Ring-Based Onboarding Page
 
 enum OnboardingIconType {
-    case plus, mic, widgets, target, calendar, star
+    case plus, mic, widgets, target, calendar, bell, star
 
     var systemName: String {
         switch self {
@@ -225,6 +233,7 @@ enum OnboardingIconType {
         case .widgets: return "square.grid.2x2.fill"
         case .target: return "target"
         case .calendar: return "calendar"
+        case .bell: return "bell.fill"
         case .star: return "star.fill"
         }
     }
@@ -316,6 +325,125 @@ struct RingOnboardingPage: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.white.opacity(0.4))
                     .padding(.bottom, 60)
+            }
+        }
+    }
+}
+
+// MARK: - Notification Permission Page
+
+struct NotificationOnboardingPage: View {
+    @EnvironmentObject private var appState: AppState
+    @State private var animatedProgress: CGFloat = 0.0
+    @State private var isRequesting = false
+    @State private var hasRequestedPermission = false
+    var onSkip: (() -> Void)?
+
+    var body: some View {
+        VStack(spacing: 40) {
+            Spacer()
+
+            // Ring with bell icon
+            ZStack {
+                // Progress ring
+                Circle()
+                    .stroke(Color.red.opacity(0.2), lineWidth: 16)
+                    .frame(width: 180, height: 180)
+
+                Circle()
+                    .trim(from: 0, to: animatedProgress)
+                    .stroke(
+                        Color.red,
+                        style: StrokeStyle(lineWidth: 16, lineCap: .round)
+                    )
+                    .frame(width: 180, height: 180)
+                    .rotationEffect(.degrees(-90))
+
+                // Bell icon in center
+                Image(systemName: "bell.fill")
+                    .font(.system(size: 60, weight: .semibold))
+                    .foregroundColor(.red)
+            }
+            .shadow(color: Color.red.opacity(0.3), radius: 25, x: 0, y: 10)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                    animatedProgress = 0.90
+                }
+            }
+
+            // Title
+            Text("Stay on Track")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+
+            // Description
+            Text("Get daily reminders to keep your streak alive. We'll notify you if you haven't logged today.")
+                .font(.system(size: 18, weight: .regular))
+                .foregroundColor(.white.opacity(0.7))
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.horizontal, 40)
+
+            Spacer()
+
+            VStack(spacing: 16) {
+                // Enable Notifications button
+                Button(action: requestNotificationPermission) {
+                    HStack {
+                        if isRequesting {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Text(hasRequestedPermission ? "Permission Requested" : "Enable Notifications")
+                        }
+                    }
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.red, Color.red.opacity(0.7)]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(16)
+                    .shadow(color: Color.red.opacity(0.4), radius: 12, x: 0, y: 6)
+                }
+                .disabled(isRequesting || hasRequestedPermission)
+                .opacity(hasRequestedPermission ? 0.5 : 1.0)
+
+                // Skip button
+                Button(action: {
+                    onSkip?()
+                }) {
+                    Text("Maybe Later")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+            }
+            .padding(.horizontal, 40)
+            .padding(.bottom, 60)
+        }
+    }
+
+    private func requestNotificationPermission() {
+        isRequesting = true
+
+        Task {
+            let granted = await appState.notificationManager.requestAuthorization()
+
+            await MainActor.run {
+                isRequesting = false
+                hasRequestedPermission = true
+
+                if granted {
+                    // Enable streak reminders by default if permission granted
+                    appState.notificationManager.streakRemindersEnabled = true
+                }
             }
         }
     }

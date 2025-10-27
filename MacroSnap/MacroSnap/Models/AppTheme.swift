@@ -11,6 +11,7 @@ enum AppTheme: String, CaseIterable, Codable {
     case system = "system"
     case dark = "dark"
     case darkGrey = "darkGrey"
+    case slate = "slate"
     case light = "light"
     case mint = "mint"
     case sunset = "sunset"
@@ -24,6 +25,8 @@ enum AppTheme: String, CaseIterable, Codable {
             return "Dark"
         case .darkGrey:
             return "Dark Grey"
+        case .slate:
+            return "Slate"
         case .light:
             return "Light"
         case .mint:
@@ -43,6 +46,8 @@ enum AppTheme: String, CaseIterable, Codable {
             return "moon.fill"
         case .darkGrey:
             return "moon.stars.fill"
+        case .slate:
+            return "circle.hexagongrid.fill"
         case .light:
             return "sun.max.fill"
         case .mint:
@@ -58,7 +63,7 @@ enum AppTheme: String, CaseIterable, Codable {
         switch self {
         case .system:
             return nil
-        case .dark, .darkGrey, .ocean:
+        case .dark, .darkGrey, .slate, .ocean:
             return .dark
         case .light, .mint, .sunset:
             return .light
@@ -68,7 +73,7 @@ enum AppTheme: String, CaseIterable, Codable {
     // Primary accent color
     var accentColor: Color {
         switch self {
-        case .system, .dark, .darkGrey, .light:
+        case .system, .dark, .darkGrey, .slate, .light:
             return .blue
         case .mint:
             return Color(red: 0.2, green: 0.8, blue: 0.6)
@@ -82,7 +87,7 @@ enum AppTheme: String, CaseIterable, Codable {
     // Secondary color
     var secondaryColor: Color {
         switch self {
-        case .system, .dark, .darkGrey, .light:
+        case .system, .dark, .darkGrey, .slate, .light:
             return .gray
         case .mint:
             return Color(red: 0.1, green: 0.6, blue: 0.5)
@@ -96,7 +101,7 @@ enum AppTheme: String, CaseIterable, Codable {
     // Protein color
     var proteinColor: Color {
         switch self {
-        case .system, .dark, .darkGrey, .light:
+        case .system, .dark, .darkGrey, .slate, .light:
             return .blue
         case .mint:
             return Color(red: 0.2, green: 0.8, blue: 0.6)
@@ -110,7 +115,7 @@ enum AppTheme: String, CaseIterable, Codable {
     // Carbs color
     var carbsColor: Color {
         switch self {
-        case .system, .dark, .darkGrey, .light:
+        case .system, .dark, .darkGrey, .slate, .light:
             return .green
         case .mint:
             return Color(red: 0.4, green: 0.9, blue: 0.5)
@@ -124,7 +129,7 @@ enum AppTheme: String, CaseIterable, Codable {
     // Fat color
     var fatColor: Color {
         switch self {
-        case .system, .dark, .darkGrey, .light:
+        case .system, .dark, .darkGrey, .slate, .light:
             return .yellow
         case .mint:
             return Color(red: 0.9, green: 0.9, blue: 0.3)
@@ -138,7 +143,7 @@ enum AppTheme: String, CaseIterable, Codable {
     // Background gradient (for themed sections)
     var backgroundGradient: LinearGradient {
         switch self {
-        case .system, .dark, .darkGrey, .light:
+        case .system, .dark, .darkGrey, .slate, .light:
             return LinearGradient(
                 colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.1)],
                 startPoint: .topLeading,
@@ -175,6 +180,8 @@ enum AppTheme: String, CaseIterable, Codable {
         switch self {
         case .darkGrey:
             return Color(red: 0.13, green: 0.13, blue: 0.14) // Dark grey - subtle but visible difference from pure black
+        case .slate:
+            return Color(red: 54/255, green: 57/255, blue: 64/255) // Slate - #363940
         case .system, .dark, .light, .mint, .sunset, .ocean:
             return nil
         }
@@ -182,7 +189,7 @@ enum AppTheme: String, CaseIterable, Codable {
 
     var isPro: Bool {
         switch self {
-        case .system, .dark, .darkGrey, .light:
+        case .system, .dark, .darkGrey, .slate, .light:
             return false
         case .mint, .sunset, .ocean:
             return true

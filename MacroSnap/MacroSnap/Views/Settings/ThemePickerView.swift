@@ -18,7 +18,7 @@ struct ThemePickerView: View {
             List {
                 // Free Themes
                 Section {
-                    ForEach([AppTheme.system, AppTheme.dark, AppTheme.darkGrey, AppTheme.light], id: \.self) { theme in
+                    ForEach([AppTheme.system, AppTheme.dark, AppTheme.darkGrey, AppTheme.slate, AppTheme.light], id: \.self) { theme in
                         ThemeRow(
                             theme: theme,
                             isSelected: appState.themeManager.currentTheme == theme,
