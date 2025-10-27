@@ -208,32 +208,48 @@ class CloudKitSyncService: ObservableObject {
 
     private func syncPresetsToCloud() async {
         let fetchRequest = PresetEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "ckRecordID == nil OR ckRecordID == %@", "")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \PresetEntity.updatedAt, ascending: false)]
 
         do {
             let entities = try viewContext.fetch(fetchRequest)
 
             guard !entities.isEmpty else {
-                print("📦 No new presets to sync")
+                print("📦 No presets to sync")
                 return
             }
 
             print("📤 Uploading \(entities.count) presets to CloudKit...")
 
-            let records = entities.map { $0.toCKRecord() }
-            let savedRecords = try await saveRecordsInBatches(records)
+            // Separate new presets (no ckRecordID) from existing ones
+            let newPresets = entities.filter { $0.ckRecordID == nil || $0.ckRecordID?.isEmpty == true }
+            let existingPresets = entities.filter { $0.ckRecordID != nil && $0.ckRecordID?.isEmpty == false }
 
-            // Update entities with CloudKit record IDs
-            for (index, entity) in entities.enumerated() {
-                if index < savedRecords.count {
-                    let recordID = savedRecords[index].recordID.recordName
-                    entity.ckRecordID = recordID
-                    print("✅ Preset '\(entity.name ?? "Unknown")' saved with ID: \(recordID)")
+            // Upload new presets
+            if !newPresets.isEmpty {
+                print("📤 Uploading \(newPresets.count) new presets...")
+                let records = newPresets.map { $0.toCKRecord() }
+                let savedRecords = try await saveRecordsInBatches(records)
+
+                // Update entities with CloudKit record IDs
+                for (index, entity) in newPresets.enumerated() {
+                    if index < savedRecords.count {
+                        let recordID = savedRecords[index].recordID.recordName
+                        entity.ckRecordID = recordID
+                        print("✅ New preset '\(entity.name ?? "Unknown")' saved with ID: \(recordID)")
+                    }
                 }
             }
 
+            // Update existing presets
+            if !existingPresets.isEmpty {
+                print("📤 Updating \(existingPresets.count) existing presets...")
+                let records = existingPresets.map { $0.toCKRecord() }
+                let savedRecords = try await saveRecordsInBatches(records)
+                print("✅ Updated \(savedRecords.count) existing presets in CloudKit")
+            }
+
             try viewContext.save()
-            print("✅ Successfully uploaded \(savedRecords.count) presets to CloudKit")
+            print("✅ Successfully synced all presets to CloudKit")
 
         } catch {
             print("❌ Failed to sync presets to CloudKit: \(error)")
@@ -428,7 +444,16 @@ class CloudKitSyncService: ObservableObject {
             let results = try viewContext.fetch(fetchRequest)
 
             if let existingEntity = results.first {
-                existingEntity.update(from: record)
+                // Only update if CloudKit version is newer
+                let cloudUpdatedAt = record["updatedAt"] as? Date ?? Date.distantPast
+                let localUpdatedAt = existingEntity.updatedAt ?? Date.distantPast
+
+                if cloudUpdatedAt > localUpdatedAt {
+                    print("☁️ Updating local preset with newer CloudKit version")
+                    existingEntity.update(from: record)
+                } else {
+                    print("💾 Keeping local preset (newer than CloudKit version)")
+                }
             } else {
                 let newEntity = PresetEntity(context: viewContext)
                 newEntity.id = UUID()

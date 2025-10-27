@@ -56,9 +56,13 @@ struct PresetLibraryView: View {
             }
             .sheet(isPresented: $showingAddPreset) {
                 AddPresetView()
+                    .environment(\.managedObjectContext, viewContext)
+                    .environmentObject(appState)
             }
             .sheet(item: $selectedPreset) { preset in
                 EditPresetView(preset: preset)
+                    .environment(\.managedObjectContext, viewContext)
+                    .environmentObject(appState)
             }
             .alert("Delete Preset?", isPresented: $showingDeleteAlert) {
                 Button("Cancel", role: .cancel) { }
@@ -167,7 +171,7 @@ struct PresetLibraryView: View {
 // MARK: - Preset Row
 
 struct PresetRow: View {
-    let preset: PresetEntity
+    @ObservedObject var preset: PresetEntity
 
     var body: some View {
         HStack(spacing: 12) {
