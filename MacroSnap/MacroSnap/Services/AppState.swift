@@ -14,6 +14,7 @@ import CoreData
 class AppState: ObservableObject {
     let themeManager = ThemeManager()
     let cloudKitSync: CloudKitSyncService
+    let notificationManager = NotificationManager.shared
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -30,6 +31,12 @@ class AppState: ObservableObject {
             .store(in: &cancellables)
 
         cloudKitSync.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
+
+        notificationManager.objectWillChange
             .sink { [weak self] _ in
                 self?.objectWillChange.send()
             }

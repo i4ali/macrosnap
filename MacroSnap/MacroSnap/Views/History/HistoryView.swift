@@ -14,6 +14,13 @@ enum HistoryViewMode {
     case month
 }
 
+// Make Date identifiable for sheet presentation
+extension Date: Identifiable {
+    public var id: TimeInterval {
+        self.timeIntervalSince1970
+    }
+}
+
 struct HistoryView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.managedObjectContext) private var viewContext
@@ -24,6 +31,7 @@ struct HistoryView: View {
     @State private var showProUpgradePrompt = false
     @State private var showProUpgradeView = false
     @State private var viewMode: HistoryViewMode = .day
+    @State private var selectedDate: Date?
 
     private let calendar = Calendar.current
     private let weekdaySymbols = ["S", "M", "T", "W", "T", "F", "S"]
@@ -79,6 +87,11 @@ struct HistoryView: View {
             }
             .sheet(isPresented: $showProUpgradeView) {
                 ProUpgradeView()
+            }
+            .sheet(item: $selectedDate) { date in
+                DayEntriesSheet(date: date)
+                    .environmentObject(appState)
+                    .environment(\.managedObjectContext, viewContext)
             }
             .alert("Unlock Unlimited History", isPresented: $showProUpgradePrompt) {
                 Button("Upgrade to Pro") {
@@ -296,6 +309,12 @@ struct HistoryView: View {
                             hasData: hasDataForDate(date),
                             isInLast7Days: isDateInLast7Days(date),
                             isPro: storeManager.isPro,
+                            onDayTapped: {
+                                if hasDataForDate(date) && (isDateInLast7Days(date) || storeManager.isPro || calendar.isDateInToday(date)) {
+                                    print("🖱️ Day tapped: \(date)")
+                                    selectedDate = date
+                                }
+                            },
                             onLockedDayTapped: {
                                 showProUpgradePrompt = true
                             }
@@ -548,6 +567,7 @@ struct DayCell: View {
     let hasData: Bool
     let isInLast7Days: Bool
     let isPro: Bool
+    let onDayTapped: () -> Void
     let onLockedDayTapped: () -> Void
 
     private let calendar = Calendar.current
@@ -560,6 +580,8 @@ struct DayCell: View {
         Button(action: {
             if isLocked {
                 onLockedDayTapped()
+            } else if hasData {
+                onDayTapped()
             }
         }) {
             ZStack {
@@ -602,7 +624,7 @@ struct DayCell: View {
             }
         }
         .buttonStyle(.plain)
-        .disabled(!isLocked)
+        .disabled(!isLocked && !hasData)
     }
 
     private var foregroundColor: Color {

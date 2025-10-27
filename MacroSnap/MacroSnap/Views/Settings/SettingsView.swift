@@ -288,6 +288,44 @@ struct SettingsView: View {
                     .buttonStyle(.plain)
                 }
 
+                // MARK: - Reminders Section
+                Section {
+                    Toggle(isOn: Binding(
+                        get: { appState.notificationManager.streakRemindersEnabled },
+                        set: { newValue in
+                            Task {
+                                if newValue && !appState.notificationManager.isAuthorized {
+                                    let granted = await appState.notificationManager.requestAuthorization()
+                                    if granted {
+                                        appState.notificationManager.streakRemindersEnabled = true
+                                    }
+                                } else {
+                                    appState.notificationManager.streakRemindersEnabled = newValue
+                                }
+                            }
+                        }
+                    )) {
+                        Label("Streak Reminders", systemImage: "bell.fill")
+                            .foregroundColor(.primary)
+                    }
+
+                    if appState.notificationManager.streakRemindersEnabled {
+                        DatePicker(
+                            "Reminder Time",
+                            selection: Binding(
+                                get: { appState.notificationManager.reminderTime },
+                                set: { appState.notificationManager.reminderTime = $0 }
+                            ),
+                            displayedComponents: .hourAndMinute
+                        )
+                        .foregroundColor(.primary)
+                    }
+                } header: {
+                    Text("Reminders")
+                } footer: {
+                    Text("Get reminded to keep your streak alive. You'll receive a daily notification at your chosen time.")
+                }
+
                 // MARK: - iCloud Sync
                 Section {
                     HStack {

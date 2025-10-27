@@ -303,9 +303,10 @@ struct QuickLogSheet: View {
         // Save to CoreData
         saveEntry(entry)
 
-        // Trigger CloudKit sync
+        // Trigger CloudKit sync and update notifications
         Task {
             await appState.cloudKitSync.performFullSync()
+            await appState.notificationManager.updateNotificationAfterEntry()
         }
 
         dismiss()

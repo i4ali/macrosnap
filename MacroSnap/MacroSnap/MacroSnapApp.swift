@@ -13,6 +13,7 @@ struct MacroSnapApp: App {
     let persistenceController = PersistenceController.shared
     @StateObject private var appState = AppState()
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
@@ -23,6 +24,14 @@ struct MacroSnapApp: App {
                 .tint(appState.themeManager.currentTheme.accentColor)
                 .fullScreenCover(isPresented: .constant(!hasCompletedOnboarding)) {
                     OnboardingView()
+                }
+                .onChange(of: scenePhase) { newPhase in
+                    if newPhase == .active {
+                        // Refresh notification state when app becomes active
+                        Task {
+                            await appState.notificationManager.refreshNotificationState()
+                        }
+                    }
                 }
         }
     }
