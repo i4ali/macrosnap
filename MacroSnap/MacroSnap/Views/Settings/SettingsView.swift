@@ -12,47 +12,15 @@ struct SettingsView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var storeManager = StoreManager.shared
-    @FocusState private var focusedField: GoalField?
-
-    // Goal inputs - display values
-    @State private var proteinGoal = "" {
-        didSet {
-            print("📝 proteinGoal changed: '\(oldValue)' → '\(proteinGoal)'")
-        }
-    }
-    @State private var carbsGoal = "" {
-        didSet {
-            print("📝 carbsGoal changed: '\(oldValue)' → '\(carbsGoal)'")
-        }
-    }
-    @State private var fatGoal = "" {
-        didSet {
-            print("📝 fatGoal changed: '\(oldValue)' → '\(fatGoal)'")
-        }
-    }
-
-    // Edit mode values - preserved across view updates
-    @State private var editProteinGoal = ""
-    @State private var editCarbsGoal = ""
-    @State private var editFatGoal = ""
 
     // UI states
     @State private var showingAlert = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
-    @State private var isEditing = false {
-        didSet {
-            print("🔴 isEditing changed: \(oldValue) → \(isEditing)")
-        }
-    }
     @State private var showProUpgrade = false
     @State private var showThemePicker = false
     @State private var showCustomGoals = false
-    @State private var showResetConfirmation = false
-
-    enum GoalField {
-        case protein, carbs, fat
-    }
+    @State private var showEditGoals = false
 
     var body: some View {
         NavigationView {
@@ -198,35 +166,22 @@ struct SettingsView: View {
 
                 // MARK: - Daily Goals Section
                 Section {
-                    HStack {
-                        Text("Daily Goals")
-                            .font(.headline)
+                    Button(action: {
+                        showEditGoals = true
+                    }) {
+                        HStack {
+                            Text("Daily Goals")
+                                .font(.headline)
+                                .foregroundColor(.primary)
 
-                        Spacer()
+                            Spacer()
 
-                        if isEditing {
-                            Button("Cancel") {
-                                // Just exit editing mode - discard edit values
-                                isEditing = false
-                            }
-                            .font(.subheadline)
-
-                            Button("Save") {
-                                saveGoals()
-                            }
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        } else {
-                            Button("Edit") {
-                                // Copy current values to edit mode variables
-                                editProteinGoal = proteinGoal
-                                editCarbsGoal = carbsGoal
-                                editFatGoal = fatGoal
-                                isEditing = true
-                            }
-                            .font(.subheadline)
+                            Text("Edit")
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
                         }
                     }
+                    .buttonStyle(.plain)
 
                     // Protein Goal
                     HStack {
@@ -235,15 +190,8 @@ struct SettingsView: View {
 
                         Spacer()
 
-                        if isEditing {
-                            TextField("180", text: $editProteinGoal)
-                                .keyboardType(.decimalPad)
-                                .multilineTextAlignment(.trailing)
-                                .frame(width: 80)
-                                .focused($focusedField, equals: .protein)
-                        } else {
-                            Text("\(Int(appState.getCurrentGoal().proteinGoal))")
-                        }
+                        Text("\(Int(appState.getCurrentGoal().proteinGoal))")
+                            .foregroundColor(.primary)
 
                         Text("g")
                             .foregroundColor(.secondary)
@@ -256,15 +204,8 @@ struct SettingsView: View {
 
                         Spacer()
 
-                        if isEditing {
-                            TextField("250", text: $editCarbsGoal)
-                                .keyboardType(.decimalPad)
-                                .multilineTextAlignment(.trailing)
-                                .frame(width: 80)
-                                .focused($focusedField, equals: .carbs)
-                        } else {
-                            Text("\(Int(appState.getCurrentGoal().carbGoal))")
-                        }
+                        Text("\(Int(appState.getCurrentGoal().carbGoal))")
+                            .foregroundColor(.primary)
 
                         Text("g")
                             .foregroundColor(.secondary)
@@ -277,19 +218,13 @@ struct SettingsView: View {
 
                         Spacer()
 
-                        if isEditing {
-                            TextField("70", text: $editFatGoal)
-                                .keyboardType(.decimalPad)
-                                .multilineTextAlignment(.trailing)
-                                .frame(width: 80)
-                                .focused($focusedField, equals: .fat)
-                        } else {
-                            Text("\(Int(appState.getCurrentGoal().fatGoal))")
-                        }
+                        Text("\(Int(appState.getCurrentGoal().fatGoal))")
+                            .foregroundColor(.primary)
 
                         Text("g")
                             .foregroundColor(.secondary)
                     }
+
                     // Custom Goals (Pro Feature)
                     if storeManager.isPro {
                         Button(action: {
@@ -430,24 +365,6 @@ struct SettingsView: View {
                             .font(.caption)
                     }
                 }
-
-                // MARK: - Debug Section (Remove before production)
-                Section {
-                    Button(role: .destructive, action: {
-                        showResetConfirmation = true
-                    }) {
-                        HStack {
-                            Label("Reset All Data", systemImage: "trash.fill")
-                                .foregroundColor(.red)
-                            Spacer()
-                        }
-                    }
-                } header: {
-                    Text("Debug")
-                } footer: {
-                    Text("⚠️ Remove this section before production! Deletes all entries, goals, presets, and resets onboarding.")
-                        .foregroundColor(.red)
-                }
                 }
                 .scrollContentBackground(.hidden)
                 .id("settings-list")  // Stable ID to prevent view recreation
@@ -469,24 +386,20 @@ struct SettingsView: View {
                     .environmentObject(appState)
                     .environment(\.managedObjectContext, viewContext)
             }
-            .task {
-                // Load goals once when view first appears
-                if proteinGoal.isEmpty {
-                    loadCurrentGoals()
-                }
+            .sheet(isPresented: $showEditGoals) {
+                let currentGoal = appState.getCurrentGoal()
+                EditGoalsSheet(
+                    initialProtein: currentGoal.proteinGoal,
+                    initialCarbs: currentGoal.carbGoal,
+                    initialFat: currentGoal.fatGoal
+                )
+                .environmentObject(appState)
+                .environment(\.managedObjectContext, viewContext)
             }
             .alert(alertTitle, isPresented: $showingAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(alertMessage)
-            }
-            .alert("Reset All Data?", isPresented: $showResetConfirmation) {
-                Button("Cancel", role: .cancel) { }
-                Button("Reset Everything", role: .destructive) {
-                    resetAllData()
-                }
-            } message: {
-                Text("This will permanently delete all entries, goals, presets, and reset onboarding. This action cannot be undone.")
             }
         }
     }
@@ -569,215 +482,6 @@ struct SettingsView: View {
             print("✅ Share sheet presented successfully")
         }
     }
-
-    private func loadCurrentGoals() {
-        // NEVER reload goals while user is editing - this would wipe their changes!
-        guard !isEditing else {
-            print("⚠️ loadCurrentGoals blocked - user is editing")
-            return
-        }
-
-        print("🟢 loadCurrentGoals called")
-        let currentGoal = appState.getCurrentGoal()
-        print("🟢 Database values: P=\(currentGoal.proteinGoal), C=\(currentGoal.carbGoal), F=\(currentGoal.fatGoal)")
-
-        proteinGoal = String(Int(currentGoal.proteinGoal))
-        carbsGoal = String(Int(currentGoal.carbGoal))
-        fatGoal = String(Int(currentGoal.fatGoal))
-
-        print("🟢 Set @State values to: P=\(proteinGoal), C=\(carbsGoal), F=\(fatGoal)")
-    }
-
-    private func saveGoals() {
-        print("🟡 saveGoals called - BEFORE keyboard dismiss")
-        print("🟡 Values before dismiss: P=\(proteinGoal), C=\(carbsGoal), F=\(fatGoal)")
-
-        // Force dismiss keyboard to commit TextField values
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-        focusedField = nil
-
-        print("🟡 Keyboard dismissed, waiting 0.3s...")
-
-        // Delay to ensure TextField values are committed
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            print("🟡 After delay: P=\(self.proteinGoal), C=\(self.carbsGoal), F=\(self.fatGoal)")
-            self.performSave()
-        }
-    }
-
-    private func performSave() {
-        print("🔵 performSave called")
-        print("🔵 Edit values: P=\(editProteinGoal), C=\(editCarbsGoal), F=\(editFatGoal)")
-
-        // Validate inputs from EDIT variables
-        guard let protein = Double(editProteinGoal), protein > 0 else {
-            alertTitle = "Invalid Input"
-            alertMessage = "Please enter a valid protein goal"
-            showingAlert = true
-            isEditing = false // Exit editing mode on error
-            return
-        }
-
-        guard let carbs = Double(editCarbsGoal), carbs > 0 else {
-            alertTitle = "Invalid Input"
-            alertMessage = "Please enter a valid carbs goal"
-            showingAlert = true
-            isEditing = false // Exit editing mode on error
-            return
-        }
-
-        guard let fat = Double(editFatGoal), fat > 0 else {
-            alertTitle = "Invalid Input"
-            alertMessage = "Please enter a valid fat goal"
-            showingAlert = true
-            isEditing = false // Exit editing mode on error
-            return
-        }
-
-        print("🔵 Validated: P=\(protein), C=\(carbs), F=\(fat)")
-
-        // Create goal entity
-        let goal = MacroGoal(
-            proteinGoal: protein,
-            carbGoal: carbs,
-            fatGoal: fat
-        )
-
-        print("🔵 Saving to database...")
-        // Save to CoreData
-        saveGoalToDatabase(goal)
-
-        print("🔵 Checking what getCurrentGoal returns after save...")
-        let savedGoal = appState.getCurrentGoal()
-        print("🔵 After save: P=\(savedGoal.proteinGoal), C=\(savedGoal.carbGoal), F=\(savedGoal.fatGoal)")
-
-        // Copy saved values to display variables
-        proteinGoal = String(Int(savedGoal.proteinGoal))
-        carbsGoal = String(Int(savedGoal.carbGoal))
-        fatGoal = String(Int(savedGoal.fatGoal))
-
-        // Exit editing mode
-        print("🔵 Exiting editing mode...")
-        isEditing = false
-
-        alertTitle = "Success"
-        alertMessage = "Your daily goals have been updated"
-        showingAlert = true
-    }
-
-    private func saveGoalToDatabase(_ goal: MacroGoal) {
-        // Fetch or create default goal
-        let fetchRequest: NSFetchRequest<GoalEntity> = GoalEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "dayOfWeek == -1") // Default goal
-        fetchRequest.fetchLimit = 1
-
-        do {
-            let results = try viewContext.fetch(fetchRequest)
-
-            if let existingGoal = results.first {
-                // Update existing goal
-                existingGoal.proteinGoal = goal.proteinGoal
-                existingGoal.carbGoal = goal.carbGoal
-                existingGoal.fatGoal = goal.fatGoal
-                existingGoal.updatedAt = Date()
-                // Clear CloudKit data to force fresh upload
-                existingGoal.ckRecordID = nil
-                existingGoal.ckSystemFields = nil
-            } else {
-                // Create new goal
-                let newGoal = GoalEntity(context: viewContext)
-                newGoal.id = UUID()
-                newGoal.proteinGoal = goal.proteinGoal
-                newGoal.carbGoal = goal.carbGoal
-                newGoal.fatGoal = goal.fatGoal
-                newGoal.dayOfWeek = -1 // Default goal
-                newGoal.createdAt = Date()
-                newGoal.updatedAt = Date()
-            }
-
-            try viewContext.save()
-
-            // Notify AppState that goals changed so UI refreshes
-            appState.notifyGoalsChanged()
-
-            // Upload to CloudKit (don't download immediately to avoid overwriting fresh changes)
-            Task {
-                await appState.cloudKitSync.syncLocalToCloud()
-            }
-
-        } catch {
-            alertTitle = "Error"
-            alertMessage = "Failed to save goals: \(error.localizedDescription)"
-            showingAlert = true
-        }
-    }
-
-    private func resetAllData() {
-        print("🗑️ Starting reset of all data...")
-
-        // 1. Delete all entries
-        let entriesFetch: NSFetchRequest<MacroEntryEntity> = MacroEntryEntity.fetchRequest()
-        do {
-            let entries = try viewContext.fetch(entriesFetch)
-            print("🗑️ Deleting \(entries.count) entries...")
-            for entry in entries {
-                viewContext.delete(entry)
-            }
-        } catch {
-            print("❌ Failed to fetch entries: \(error)")
-        }
-
-        // 2. Delete all goals
-        let goalsFetch: NSFetchRequest<GoalEntity> = GoalEntity.fetchRequest()
-        do {
-            let goals = try viewContext.fetch(goalsFetch)
-            print("🗑️ Deleting \(goals.count) goals...")
-            for goal in goals {
-                viewContext.delete(goal)
-            }
-        } catch {
-            print("❌ Failed to fetch goals: \(error)")
-        }
-
-        // 3. Delete all presets
-        let presetsFetch: NSFetchRequest<PresetEntity> = PresetEntity.fetchRequest()
-        do {
-            let presets = try viewContext.fetch(presetsFetch)
-            print("🗑️ Deleting \(presets.count) presets...")
-            for preset in presets {
-                viewContext.delete(preset)
-            }
-        } catch {
-            print("❌ Failed to fetch presets: \(error)")
-        }
-
-        // 4. Save CoreData changes
-        do {
-            try viewContext.save()
-            print("✅ CoreData cleared successfully")
-        } catch {
-            print("❌ Failed to save CoreData: \(error)")
-            alertTitle = "Error"
-            alertMessage = "Failed to delete local data: \(error.localizedDescription)"
-            showingAlert = true
-            return
-        }
-
-        // 5. Reset onboarding flag
-        UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
-        print("✅ Onboarding flag reset")
-
-        // 6. Notify AppState to refresh
-        appState.notifyGoalsChanged()
-
-        // 7. Show success message
-        alertTitle = "Reset Complete"
-        alertMessage = "All data has been deleted. Restart the app to see onboarding."
-        showingAlert = true
-
-        print("✅ Reset completed successfully")
-    }
-
 }
 
 // MARK: - Preview
