@@ -182,6 +182,7 @@ This roadmap outlines the development phases for MacroSnap, from MVP to advanced
 - [ ] Empty states (no data yet)
 - [ ] Haptic feedback
 - [x] Dark mode refinements (Dark Grey theme added as default)
+- [x] Slate theme added as free option (#363940)
 
 #### Polish - Robustness
 - [ ] Error handling (network, validation)
@@ -263,8 +264,12 @@ This roadmap outlines the development phases for MacroSnap, from MVP to advanced
 - [x] Onboarding tutorial (first launch)
 - [x] Notification permission in onboarding
 - [x] Daily streak reminders (push notifications)
+- [x] Notification badge clearing
+- [x] Pro upgrade flow fixes (dismiss after purchase)
+- [x] Preset editing and CloudKit sync fixes
+- [x] Goal sync between Settings and Custom Daily Goals
 - [ ] Better empty states
-- [ ] Improved Pro upgrade flow
+- [ ] Improved Pro upgrade flow (pricing experiments)
 
 #### User-Requested Features (Prioritize Based on Feedback)
 - [ ] Meal timing (log time with each entry)
