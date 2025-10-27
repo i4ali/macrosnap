@@ -24,12 +24,12 @@
 2. Observe onboarding screen
 
 **Expected Results:**
-- [ ] Onboarding appears automatically (not main app)
-- [ ] Background is dark grey (#212123), not pure black
-- [ ] "Welcome to MacroSnap" page shows with animated rings
-- [ ] Rings continuously fill and unfill (breathing animation)
-- [ ] Three concentric rings: Blue (outer), Orange (middle), Green (inner)
-- [ ] Skip button visible in top-right corner
+- [ p] Onboarding appears automatically (not main app)
+- [ p] Background is dark grey (#212123), not pure black
+- [ p] "Welcome to MacroSnap" page shows with animated rings
+- [ p] Rings continuously fill and unfill (breathing animation)
+- [ p] Three concentric rings: Blue (outer), Orange (middle), Green (inner)
+- [ p] Skip button visible in top-right corner
 
 ### Test 1.2: Onboarding Navigation
 **Steps:**
@@ -38,11 +38,11 @@
 3. Read each page title
 
 **Expected Results:**
-- [ ] 6 total pages (Welcome, Quick Logging, Use Your Voice, Set Goals, Track Progress, Unlock Pro)
-- [ ] Each page has animated ring that fills/unfills
-- [ ] Each page has clear title and description
-- [ ] Swipe gesture works smoothly
-- [ ] Page indicator dots visible at bottom
+- [ p] 6 total pages (Welcome, Quick Logging, Use Your Voice, Set Goals, Track Progress, Unlock Pro)
+- [ p] Each page has animated ring that fills/unfills
+- [ p] Each page has clear title and description
+- [ p] Swipe gesture works smoothly
+- [ p] Page indicator dots visible at bottom
 
 ### Test 1.3: Complete Onboarding
 **Steps:**
@@ -50,9 +50,9 @@
 2. Tap "Get Started" button
 
 **Expected Results:**
-- [ ] Onboarding dismisses
-- [ ] Main app appears (Today tab)
-- [ ] Never shows onboarding again on subsequent launches
+- [ p] Onboarding dismisses
+- [ p] Main app appears (Today tab)
+- [ p] Never shows onboarding again on subsequent launches
 
 ### Test 1.4: Skip Onboarding
 **Steps:**
@@ -61,9 +61,9 @@
 3. Tap "Skip" button on first page
 
 **Expected Results:**
-- [ ] Onboarding dismisses immediately
-- [ ] Main app appears
-- [ ] Never shows onboarding again
+- [p ] Onboarding dismisses immediately
+- [ p] Main app appears
+- [ p] Never shows onboarding again
 
 ---
 
@@ -75,13 +75,13 @@
 2. Tap the blue "+" floating button
 
 **Expected Results:**
-- [ ] Modal sheet slides up from bottom
-- [ ] Sheet has drag handle at top
-- [ ] Title says "Log Macros"
-- [ ] Three input fields visible: Protein, Carbs, Fat
-- [ ] Custom numeric keyboard visible
-- [ ] "Done" button at bottom
-- [ ] Optional notes field visible (with character count if Pro)
+- [ p] Modal sheet slides up from bottom
+- [ p] Sheet has drag handle at top
+- [ p] Title says "Log Macros"
+- [ p] Three input fields visible: Protein, Carbs, Fat
+- [ p] Custom numeric keyboard visible
+- [ p] "Done" button at bottom
+- [ p] Optional notes field visible (with character count if Pro)
 
 ### Test 2.2: Log Simple Entry
 **Steps:**
@@ -95,14 +95,14 @@
 8. Tap "Done"
 
 **Expected Results:**
-- [ ] Sheet dismisses
-- [ ] Today view updates immediately
-- [ ] Protein ring shows progress
-- [ ] Carbs ring shows progress
-- [ ] Fat ring shows progress
-- [ ] Calorie count updates (40×4 + 30×4 + 10×9 = 370 calories)
-- [ ] Entry count shows "1 entry today"
-- [ ] No loading spinners or delays
+- [p ] Sheet dismisses
+- [ p] Today view updates immediately
+- [ p] Protein ring shows progress
+- [ p] Carbs ring shows progress
+- [ p] Fat ring shows progress
+- [ p] Calorie count updates (40×4 + 30×4 + 10×9 = 370 calories)
+- [ p] Entry count shows "1 entry today"
+- [ p] No loading spinners or delays
 
 ### Test 2.3: Log Multiple Entries
 **Steps:**
@@ -113,11 +113,11 @@
 5. Log entry: 30P / 20C / 7F
 
 **Expected Results:**
-- [ ] All entries added successfully
-- [ ] Totals show: 105P / 75C / 25F
-- [ ] Calories: 945 total
-- [ ] Entry count shows "3 entries today"
-- [ ] Rings update correctly with cumulative progress
+- [ p] All entries added successfully
+- [ p] Totals show: 105P / 75C / 25F
+- [ p] Calories: 945 total
+- [ p] Entry count shows "3 entries today"
+- [ p] Rings update correctly with cumulative progress
 
 ### Test 2.4: Decimal Values
 **Steps:**
@@ -126,9 +126,9 @@
 3. Tap "Done"
 
 **Expected Results:**
-- [ ] Decimal values accepted
-- [ ] Calculations accurate
-- [ ] Display rounds to whole numbers in UI (43P / 33C / 13F)
+- [ p] Decimal values accepted
+- [ p] Calculations accurate
+- [ p] Display rounds to whole numbers in UI (43P / 33C / 13F)
 
 ### Test 2.5: Custom Keyboard Functionality
 **Steps:**
@@ -138,11 +138,11 @@
 4. Tap backspace multiple times
 
 **Expected Results:**
-- [ ] All number buttons work (0-9)
-- [ ] Decimal point works
-- [ ] Only one decimal point allowed per number
-- [ ] Backspace deletes one character at a time
-- [ ] Can completely clear field with backspace
+- [ p] All number buttons work (0-9)
+- [ p] Decimal point works
+- [ p] Only one decimal point allowed per number
+- [ p] Backspace deletes one character at a time
+- [ p] Can completely clear field with backspace
 
 ### Test 2.6: Field Validation
 **Steps:**
@@ -151,8 +151,8 @@
 3. Tap "Done"
 
 **Expected Results:**
-- [ ] Error message or prevention (cannot submit all zeros)
-- [ ] OR automatically dismisses without creating entry
+- [ p] Error message or prevention (cannot submit all zeros)
+- [ p] OR automatically dismisses without creating entry
 
 **Steps:**
 1. Open Quick Log
@@ -160,7 +160,7 @@
 3. Tap "Done"
 
 **Expected Results:**
-- [ ] Negative values rejected OR converted to positive
+- [ p] Negative values rejected OR converted to positive
 
 ### Test 2.7: Dismiss Without Saving
 **Steps:**
@@ -169,9 +169,9 @@
 3. Swipe down to dismiss (don't tap Done)
 
 **Expected Results:**
-- [ ] Sheet dismisses
-- [ ] Entry NOT saved
-- [ ] Today totals unchanged
+- [ p] Sheet dismisses
+- [ p] Entry NOT saved
+- [ p] Today totals unchanged
 
 ---
 
@@ -190,19 +190,19 @@
 7. Observe rings and bars
 
 **Expected Results:**
-- [ ] At 50%: Rings half-filled, bars half-filled
-- [ ] At 100%: Rings complete circle, bars fully filled
-- [ ] At 150%: Rings complete + overflow indication, bars show over 100%
-- [ ] Percentages displayed correctly (e.g., "50%" or "100%" or "150%")
-- [ ] Colors: Blue (Protein), Green (Carbs), Yellow (Fat)
+- [p ] At 50%: Rings half-filled, bars half-filled
+- [ p] At 100%: Rings complete circle, bars fully filled
+- [ p] At 150%: Rings complete + overflow indication, bars show over 100%
+- [ p] Percentages displayed correctly (e.g., "50%" or "100%" or "150%")
+- [ p] Colors: Blue (Protein), Green (Carbs), Yellow (Fat)
 
 ### Test 3.2: Date Display
 **Steps:**
 1. Check date display at top of Today view
 
 **Expected Results:**
-- [ ] Shows "Today" on left
-- [ ] Shows current date on right (e.g., "Oct 26, 2025")
+- [ p] Shows "Today" on left
+- [p ] Shows current date on right (e.g., "Oct 26, 2025")
 - [ ] Date updates at midnight
 
 ### Test 3.3: Calorie Calculation
@@ -211,8 +211,8 @@
 2. Check calorie display
 
 **Expected Results:**
-- [ ] Calories calculated correctly: (40×4) + (30×4) + (10×9) = 370 cal
-- [ ] Displays as "370 / [goal] kcal"
+- [p ] Calories calculated correctly: (40×4) + (30×4) + (10×9) = 370 cal
+- [ p] Displays as "370 / [goal] kcal"
 
 ### Test 3.4: Zero State
 **Setup:** Fresh app with no entries
@@ -221,10 +221,10 @@
 1. View Today screen with no logged macros
 
 **Expected Results:**
-- [ ] Rings are empty (just outlines)
-- [ ] Progress bars empty
-- [ ] Shows "0 / [goal] kcal"
-- [ ] Entry count shows "0 entries today"
+- [p ] Rings are empty (just outlines)
+- [ p] Progress bars empty
+- [ p] Shows "0 / [goal] kcal"
+- [ p] Entry count shows "0 entries today"
 
 ---
 
@@ -236,9 +236,9 @@
 2. Scroll to "Daily Goals" section
 
 **Expected Results:**
-- [ ] Default goals visible (likely 180P / 250C / 70F)
-- [ ] Goals display in read-only mode initially
-- [ ] "Edit" button visible
+- [p ] Default goals visible (likely 180P / 250C / 70F)
+- [p ] Goals display in read-only mode initially
+- [ p] "Edit" button visible
 
 ### Test 4.2: Edit Goals
 **Steps:**
@@ -250,13 +250,13 @@
 6. Tap "Save"
 
 **Expected Results:**
-- [ ] Input fields become editable
-- [ ] Can type in each field
-- [ ] "Save" and "Cancel" buttons appear
-- [ ] After Save: Success message appears
-- [ ] Goals update immediately
-- [ ] Edit mode exits
-- [ ] Navigate to Today tab - rings recalculate with new goals
+- [p ] Input fields become editable
+- [p ] Can type in each field
+- [p ] "Save" and "Cancel" buttons appear
+- [ p] After Save: Success message appears
+- [p ] Goals update immediately
+- [ p] Edit mode exits
+- [ p] Navigate to Today tab - rings recalculate with new goals
 
 ### Test 4.3: Cancel Goal Editing
 **Steps:**
@@ -265,9 +265,9 @@
 3. Tap "Cancel"
 
 **Expected Results:**
-- [ ] Changes discarded
-- [ ] Original goals remain
-- [ ] Edit mode exits
+- [ p] Changes discarded
+- [p ] Original goals remain
+- [p ] Edit mode exits
 
 ### Test 4.4: Invalid Goal Values
 **Steps:**
@@ -276,8 +276,8 @@
 3. Tap "Save"
 
 **Expected Results:**
-- [ ] Error message OR prevents saving
-- [ ] Goals remain unchanged
+- [ p] Error message OR prevents saving
+- [ p] Goals remain unchanged
 
 **Steps:**
 1. Tap "Edit"
@@ -285,7 +285,7 @@
 3. Tap "Save"
 
 **Expected Results:**
-- [ ] Error message OR converts to positive OR prevents saving
+- [p ] Error message OR converts to positive OR prevents saving
 
 ### Test 4.5: Goals Persist Across Launches
 **Steps:**
@@ -295,8 +295,8 @@
 4. Check Settings
 
 **Expected Results:**
-- [ ] Custom goals still saved
-- [ ] Today view uses custom goals
+- [p ] Custom goals still saved
+- [p ] Today view uses custom goals
 
 ---
 
@@ -310,11 +310,11 @@
 4. Tap right chevron (next month)
 
 **Expected Results:**
-- [ ] Calendar shows current month by default
-- [ ] Month/year displayed (e.g., "October 2025")
-- [ ] Left chevron shows previous month
-- [ ] Right chevron shows next month
-- [ ] Calendar grid displays correctly with weekday headers (S M T W T F S)
+- [p ] Calendar shows current month by default
+- [ p] Month/year displayed (e.g., "October 2025")
+- [p ] Left chevron shows previous month
+- [ p] Right chevron shows next month
+- [ p] Calendar grid displays correctly with weekday headers (S M T W T F S)
 
 ### Test 5.2: Day Indicators
 **Setup:** Log macros on multiple days
@@ -325,9 +325,9 @@
 3. Check today's date
 
 **Expected Results:**
-- [ ] Today's date highlighted with blue circle
-- [ ] Green dot appears under today's date (indicates data)
-- [ ] Days with no data have no green dot
+- [ p] Today's date highlighted with blue circle
+- [ p] Green dot appears under today's date (indicates data)
+- [ p] Days with no data have no green dot
 
 ### Test 5.3: Free Tier Limit (Last 7 Days)
 **Setup:** Not Pro user
@@ -338,10 +338,10 @@
 3. Look at dates older than 7 days
 
 **Expected Results:**
-- [ ] Dates within last 7 days are normal
-- [ ] Dates older than 7 days are grayed out
-- [ ] Lock icon on dates older than 7 days
-- [ ] Tapping locked day shows Pro upgrade prompt
+- [p ] Dates within last 7 days are normal
+- [ p] Dates older than 7 days are grayed out
+- [p ] Lock icon on dates older than 7 days
+- [ p] Tapping locked day shows Pro upgrade prompt
 
 ### Test 5.4: Weekly Stats
 **Setup:** Log macros for last 7 days
@@ -351,10 +351,10 @@
 2. Scroll to "Weekly Averages" section
 
 **Expected Results:**
-- [ ] Shows average Protein (blue)
-- [ ] Shows average Carbs (green)
-- [ ] Shows average Fat (yellow)
-- [ ] Calculations accurate
+- [p ] Shows average Protein (blue)
+- [p ] Shows average Carbs (green)
+- [ p] Shows average Fat (yellow)
+- [p ] Calculations accurate
 
 ### Test 5.5: Streak Counter
 **Setup:** Log macros for consecutive days
@@ -364,10 +364,9 @@
 2. Check "Streak" section in History
 
 **Expected Results:**
-- [ ] Shows "X Day Streak"
-- [ ] Flame icon visible
+- [ p] Shows "X Day Streak"
+- [ p] Flame icon visible
 - [ ] Encouragement message ("Keep it going!")
-- [ ] If no entries today: streak should be 0 or previous streak
 
 ---
 
@@ -379,12 +378,12 @@
 2. Tap "Upgrade to Pro" banner
 
 **Expected Results:**
-- [ ] ProUpgradeView sheet appears
-- [ ] Shows feature list
-- [ ] Shows price ($4.99 one-time)
-- [ ] "Purchase" button visible
-- [ ] "Restore Purchases" button visible
-- [ ] Dismissable with swipe down or X button
+- [p ] ProUpgradeView sheet appears
+- [p ] Shows feature list
+- [ p] Shows price ($4.99 one-time)
+- [p ] "Purchase" button visible
+- [ p] "Restore Purchases" button visible
+- [ p] Dismissable with swipe down or X button
 
 ### Test 6.2: Unlock Pro (Test Purchase)
 **Note:** Use StoreKit Testing or sandbox account
@@ -395,12 +394,12 @@
 3. Complete test purchase flow
 
 **Expected Results:**
-- [ ] StoreKit sheet appears
-- [ ] Purchase processes
-- [ ] Success message appears
-- [ ] Pro badge appears in Settings
-- [ ] Locked features unlock immediately
-- [ ] "Upgrade to Pro" banners disappear
+- [ p] StoreKit sheet appears
+- [ p] Purchase processes
+- [ p] Success message appears
+- [ p] Pro badge appears in Settings
+- [ p] Locked features unlock immediately
+- [ p] "Upgrade to Pro" banners disappear
 
 ### Test 6.3: Pro Feature - Unlimited History
 **Setup:** Be Pro user
@@ -411,9 +410,9 @@
 3. Tap on old dates
 
 **Expected Results:**
-- [ ] No lock icons on old dates
-- [ ] Can view all historical data
-- [ ] Green dots show on all days with data (regardless of age)
+- [ p] No lock icons on old dates
+- [ p] Can view all historical data
+- [ p] Green dots show on all days with data (regardless of age)
 
 ### Test 6.4: Pro Feature - Notes on Entries
 **Setup:** Be Pro user
@@ -426,10 +425,10 @@
 5. Done
 
 **Expected Results:**
-- [ ] Notes field visible
-- [ ] Character count shown (e.g., "23/100")
-- [ ] Note saves with entry
-- [ ] Note visible in history (if implemented)
+- [ p] Notes field visible
+- [ p] Character count shown (e.g., "23/100")
+- [ p] Note saves with entry
+- [ p] Note visible in history (if implemented)
 
 ### Test 6.5: Pro Feature - Macro Presets
 **Setup:** Be Pro user
@@ -443,11 +442,11 @@
 6. Save preset
 
 **Expected Results:**
-- [ ] "Save as Preset" option visible
-- [ ] Preset name prompt appears
-- [ ] Preset saved successfully
-- [ ] Can access preset from Quick Log
-- [ ] Tapping preset auto-fills values
+- [ p] "Save as Preset" option visible
+- [ p] Preset name prompt appears
+- [ p] Preset saved successfully
+- [ p] Can access preset from Quick Log
+- [ p] Tapping preset auto-fills values
 
 ### Test 6.6: Pro Feature - Use Preset
 **Setup:** Have saved preset from Test 6.5
@@ -458,11 +457,11 @@
 3. Select "Lunch Bowl" preset
 
 **Expected Results:**
-- [ ] Preset list appears
-- [ ] Shows all saved presets
-- [ ] Tapping preset fills in: 40P / 30C / 12F
-- [ ] Note field shows "Chicken & Rice"
-- [ ] Can edit values before saving
+- [ p] Preset list appears
+- [ p] Shows all saved presets
+- [ p] Tapping preset fills in: 40P / 30C / 12F
+- [p ] Note field shows "Chicken & Rice"
+- [ p] Can edit values before saving
 
 ### Test 6.7: Pro Feature - Edit/Delete Preset
 **Steps:**
@@ -473,10 +472,10 @@
 5. Delete a preset
 
 **Expected Results:**
-- [ ] Can edit preset name and values
-- [ ] Changes save successfully
-- [ ] Delete confirmation prompt appears
-- [ ] Preset deleted from list
+- [ p] Can edit preset name and values
+- [ p] Changes save successfully
+- [ p] Delete confirmation prompt appears
+- [ p] Preset deleted from list
 
 ### Test 6.8: Pro Feature - Themes
 **Setup:** Be Pro user
@@ -508,10 +507,10 @@
 6. Check Today view on Monday vs Wednesday
 
 **Expected Results:**
-- [ ] Custom Daily Goals screen appears
-- [ ] Can set different goals per weekday
-- [ ] Goals save successfully
-- [ ] Today view uses correct goals based on day of week
+- [ p] Custom Daily Goals screen appears
+- [ p] Can set different goals per weekday
+- [ p] Goals save successfully
+- [ p] Today view uses correct goals based on day of week
 
 ### Test 6.10: Pro Feature - Export Data
 **Setup:** Be Pro user with several logged entries
@@ -522,10 +521,10 @@
 3. Wait for share sheet
 
 **Expected Results:**
-- [ ] CSV file generates
-- [ ] iOS share sheet appears
-- [ ] Can share via AirDrop, Mail, Files, etc.
-- [ ] CSV contains all entries with columns: Date, Protein, Carbs, Fat, Calories, Notes
+- [p ] CSV file generates
+- [p ] iOS share sheet appears
+- [ p] Can share via AirDrop, Mail, Files, etc.
+- [p ] CSV contains all entries with columns: Date, Protein, Carbs, Fat, Calories, Notes
 
 ### Test 6.11: Pro Feature - Week & Month View Analytics
 **Setup:** Be Pro user
@@ -539,11 +538,11 @@
 6. Review month view
 
 **Expected Results:**
-- [ ] Picker shows: Day, Week, Month
-- [ ] Week view: Shows last 7 days as bar chart
-- [ ] Week view: Shows weekly averages
-- [ ] Month view: Shows last 30 days
-- [ ] Month view: Shows monthly averages
+- [ p] Picker shows: Day, Week, Month
+- [ p] Week view: Shows last 7 days as bar chart
+- [ p] Week view: Shows weekly averages
+- [p ] Month view: Shows last 30 days
+- [ p] Month view: Shows monthly averages
 
 ### Test 6.12: Restore Purchases
 **Steps:**
@@ -643,11 +642,11 @@
 7. Say "10"
 
 **Expected Results:**
-- [ ] Siri recognizes command
-- [ ] Siri prompts for each macro in order
-- [ ] Entry logs successfully
-- [ ] Siri confirms: "Logged 40 grams protein, 30 grams carbs, 10 grams fat. That's 370 calories. Great job!"
-- [ ] Entry appears in app
+- [p ] Siri recognizes command
+- [ p] Siri prompts for each macro in order
+- [ p] Entry logs successfully
+- [ p] Siri confirms: "Logged 40 grams protein, 30 grams carbs, 10 grams fat. That's 370 calories. Great job!"
+- [ p] Entry appears in app
 
 ### Test 8.2: Show Macros via Siri
 **Setup:** Have logged entries today
@@ -656,9 +655,9 @@
 1. Say: "Hey Siri, show my macros today in MacroSnap"
 
 **Expected Results:**
-- [ ] Siri opens app
-- [ ] Siri reads back totals: "Today you've logged X protein, Y carbs, Z fat. That's XXX calories total."
-- [ ] App opens to Today view
+- [ p] Siri opens app
+- [ p] Siri reads back totals: "Today you've logged X protein, Y carbs, Z fat. That's XXX calories total."
+- [ p] App opens to Today view
 
 ### Test 8.3: Siri with No Entries
 **Setup:** Fresh day with no entries
