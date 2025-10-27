@@ -234,6 +234,9 @@ struct CustomDailyGoalsView: View {
             existingGoal.carbGoal = carbs
             existingGoal.fatGoal = fat
             existingGoal.updatedAt = Date()
+            // Clear CloudKit data to force fresh upload
+            existingGoal.ckRecordID = nil
+            existingGoal.ckSystemFields = nil
         } else {
             // Create new
             let newGoal = GoalEntity(context: viewContext)
@@ -249,9 +252,9 @@ struct CustomDailyGoalsView: View {
         do {
             try viewContext.save()
 
-            // Trigger CloudKit sync
+            // Upload to CloudKit (don't download immediately to avoid overwriting fresh changes)
             Task {
-                await appState.cloudKitSync.performFullSync()
+                await appState.cloudKitSync.syncLocalToCloud()
             }
 
             alertTitle = "Success"

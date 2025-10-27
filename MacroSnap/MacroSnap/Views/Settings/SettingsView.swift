@@ -12,6 +12,7 @@ struct SettingsView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var storeManager = StoreManager.shared
+    @FocusState private var focusedField: GoalField?
 
     // Goal inputs
     @State private var proteinGoal = ""
@@ -26,6 +27,10 @@ struct SettingsView: View {
     @State private var showProUpgrade = false
     @State private var showThemePicker = false
     @State private var showCustomGoals = false
+
+    enum GoalField {
+        case protein, carbs, fat
+    }
 
     var body: some View {
         NavigationView {
@@ -191,6 +196,7 @@ struct SettingsView: View {
                             .fontWeight(.semibold)
                         } else {
                             Button("Edit") {
+                                loadCurrentGoals()  // Load fresh values when entering edit mode
                                 isEditing = true
                             }
                             .font(.subheadline)
@@ -209,6 +215,7 @@ struct SettingsView: View {
                                 .keyboardType(.decimalPad)
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 80)
+                                .focused($focusedField, equals: .protein)
                         } else {
                             Text("\(Int(appState.getCurrentGoal().proteinGoal))")
                         }
@@ -229,6 +236,7 @@ struct SettingsView: View {
                                 .keyboardType(.decimalPad)
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 80)
+                                .focused($focusedField, equals: .carbs)
                         } else {
                             Text("\(Int(appState.getCurrentGoal().carbGoal))")
                         }
@@ -249,6 +257,7 @@ struct SettingsView: View {
                                 .keyboardType(.decimalPad)
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 80)
+                                .focused($focusedField, equals: .fat)
                         } else {
                             Text("\(Int(appState.getCurrentGoal().fatGoal))")
                         }
@@ -417,7 +426,10 @@ struct SettingsView: View {
                     .environment(\.managedObjectContext, viewContext)
             }
             .onAppear {
-                loadCurrentGoals()
+                // Only load goals if not currently editing
+                if !isEditing {
+                    loadCurrentGoals()
+                }
             }
             .alert(alertTitle, isPresented: $showingAlert) {
                 Button("OK", role: .cancel) { }
@@ -507,6 +519,11 @@ struct SettingsView: View {
     }
 
     private func loadCurrentGoals() {
+        // NEVER reload goals while user is editing - this would wipe their changes!
+        guard !isEditing else {
+            return
+        }
+
         let currentGoal = appState.getCurrentGoal()
         proteinGoal = String(Int(currentGoal.proteinGoal))
         carbsGoal = String(Int(currentGoal.carbGoal))
@@ -514,6 +531,17 @@ struct SettingsView: View {
     }
 
     private func saveGoals() {
+        // Force dismiss keyboard to commit TextField values
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        focusedField = nil
+
+        // Delay to ensure TextField values are committed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.performSave()
+        }
+    }
+
+    private func performSave() {
         // Validate inputs
         guard let protein = Double(proteinGoal), protein > 0 else {
             alertTitle = "Invalid Input"
@@ -568,6 +596,9 @@ struct SettingsView: View {
                 existingGoal.carbGoal = goal.carbGoal
                 existingGoal.fatGoal = goal.fatGoal
                 existingGoal.updatedAt = Date()
+                // Clear CloudKit data to force fresh upload
+                existingGoal.ckRecordID = nil
+                existingGoal.ckSystemFields = nil
             } else {
                 // Create new goal
                 let newGoal = GoalEntity(context: viewContext)
@@ -582,9 +613,9 @@ struct SettingsView: View {
 
             try viewContext.save()
 
-            // Trigger CloudKit sync
+            // Upload to CloudKit (don't download immediately to avoid overwriting fresh changes)
             Task {
-                await appState.cloudKitSync.performFullSync()
+                await appState.cloudKitSync.syncLocalToCloud()
             }
 
         } catch {

@@ -122,8 +122,8 @@ class CloudKitSyncService: ObservableObject {
 
     // MARK: - Sync Local to Cloud
 
-    /// Upload local changes to CloudKit
-    private func syncLocalToCloud() async {
+    /// Upload local changes to CloudKit (public for targeted syncing)
+    func syncLocalToCloud() async {
         // Sync entries
         await syncEntriesToCloud()
 
@@ -172,13 +172,14 @@ class CloudKitSyncService: ObservableObject {
 
     private func syncGoalsToCloud() async {
         let fetchRequest = GoalEntity.fetchRequest()
+        // Upload ALL goals, not just new ones (goals with cleared ckRecordID will be uploaded)
         fetchRequest.predicate = NSPredicate(format: "ckRecordID == nil OR ckRecordID == %@", "")
 
         do {
             let entities = try viewContext.fetch(fetchRequest)
 
             guard !entities.isEmpty else {
-                print("📦 No new goals to sync")
+                print("📦 No goals to sync")
                 return
             }
 
@@ -284,23 +285,48 @@ class CloudKitSyncService: ObservableObject {
         // Query for all goals created after Jan 1, 2000 (which is effectively all records)
         let distantPast = Date(timeIntervalSince1970: 946684800) // Jan 1, 2000
         let query = CKQuery(recordType: CloudKitConfig.RecordType.goal.rawValue, predicate: NSPredicate(format: "createdAt >= %@", distantPast as NSDate))
-        query.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+        query.sortDescriptors = [NSSortDescriptor(key: "updatedAt", ascending: false)]
 
         do {
             let (results, _) = try await database.records(matching: query, inZoneWith: CloudKitConfig.customZone.zoneID)
 
             print("📥 Fetched \(results.count) goals from CloudKit")
 
+            // Group goals by dayOfWeek and only keep the most recent
+            var goalsByDay: [Int16: CKRecord] = [:]
+            var duplicatesToDelete: [CKRecord.ID] = []
+
             for (_, result) in results {
                 switch result {
                 case .success(let record):
-                    updateOrCreateGoal(from: record)
+                    let dayOfWeek = record[CloudKitConfig.GoalFields.dayOfWeek] as? Int16 ?? -1
+
+                    if let existingRecord = goalsByDay[dayOfWeek] {
+                        // We already have a goal for this day - mark this one as duplicate
+                        duplicatesToDelete.append(record.recordID)
+                        print("🗑️ Marking duplicate goal for day \(dayOfWeek) for deletion")
+                    } else {
+                        // First goal for this day - keep it
+                        goalsByDay[dayOfWeek] = record
+                        updateOrCreateGoal(from: record)
+                    }
                 case .failure(let error):
                     print("❌ Failed to fetch goal: \(error)")
                 }
             }
 
             try viewContext.save()
+
+            // Delete duplicates from CloudKit
+            if !duplicatesToDelete.isEmpty {
+                print("🗑️ Deleting \(duplicatesToDelete.count) duplicate goals from CloudKit...")
+                do {
+                    let _ = try await database.modifyRecords(saving: [], deleting: duplicatesToDelete)
+                    print("✅ Deleted \(duplicatesToDelete.count) duplicate goals from CloudKit")
+                } catch {
+                    print("❌ Failed to delete duplicates: \(error)")
+                }
+            }
 
         } catch let error as CKError where error.code == .unknownItem || error.code == .invalidArguments {
             // Schema doesn't exist yet or fields not indexed - this is expected on first run
@@ -371,8 +397,11 @@ class CloudKitSyncService: ObservableObject {
     }
 
     private func updateOrCreateGoal(from record: CKRecord) {
+        let dayOfWeek = record[CloudKitConfig.GoalFields.dayOfWeek] as? Int16 ?? -1
+
+        // First try to find by dayOfWeek (since each day should have only one goal)
         let fetchRequest = GoalEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "ckRecordID == %@", record.recordID.recordName)
+        fetchRequest.predicate = NSPredicate(format: "dayOfWeek == %d", dayOfWeek)
         fetchRequest.fetchLimit = 1
 
         do {
