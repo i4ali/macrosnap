@@ -190,7 +190,11 @@ struct ProUpgradeView: View {
             }
             .alert("Purchase Successful!", isPresented: $showingSuccess) {
                 Button("OK") {
-                    dismiss()
+                    showingSuccess = false
+                    // Delay dismiss to ensure alert is fully dismissed first
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        dismiss()
+                    }
                 }
             } message: {
                 Text("You now have access to all Pro features!")
@@ -204,6 +208,15 @@ struct ProUpgradeView: View {
                 // Load products if not already loaded
                 if storeManager.products.isEmpty {
                     await storeManager.loadProducts()
+                }
+            }
+            .onChange(of: storeManager.isPro) { isPro in
+                // Auto-dismiss when user becomes Pro (after alert is dismissed)
+                if isPro && !showingSuccess {
+                    // Slight delay to ensure alert is fully dismissed
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        dismiss()
+                    }
                 }
             }
         }
