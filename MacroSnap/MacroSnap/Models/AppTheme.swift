@@ -182,7 +182,13 @@ enum AppTheme: String, CaseIterable, Codable {
             return Color(red: 0.13, green: 0.13, blue: 0.14) // Dark grey - subtle but visible difference from pure black
         case .slate:
             return Color(red: 54/255, green: 57/255, blue: 64/255) // Slate - #363940
-        case .system, .dark, .light, .mint, .sunset, .ocean:
+        case .ocean:
+            return Color(red: 0.08, green: 0.12, blue: 0.18) // Deep ocean blue - #14181F
+        case .mint:
+            return Color(red: 0.95, green: 0.98, blue: 0.96) // Very light mint - #F2FAF5
+        case .sunset:
+            return Color(red: 0.99, green: 0.97, blue: 0.94) // Very light warm peachy - #FDF8F0
+        case .system, .dark, .light:
             return nil
         }
     }
