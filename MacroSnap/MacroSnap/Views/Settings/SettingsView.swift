@@ -13,6 +13,14 @@ struct SettingsView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var storeManager = StoreManager.shared
 
+    // Watch for default goal changes to auto-refresh UI
+    @FetchRequest(
+        sortDescriptors: [],
+        predicate: NSPredicate(format: "dayOfWeek == -1"),
+        animation: .default
+    )
+    private var defaultGoals: FetchedResults<GoalEntity>
+
     // UI states
     @State private var showingAlert = false
     @State private var alertTitle = ""
@@ -21,6 +29,19 @@ struct SettingsView: View {
     @State private var showThemePicker = false
     @State private var showCustomGoals = false
     @State private var showEditGoals = false
+    @State private var refreshTrigger = UUID() // Force view refresh when goals change
+
+    // Get current goal from FetchRequest for reactive updates
+    private var currentGoal: MacroGoal {
+        if let goalEntity = defaultGoals.first {
+            return MacroGoal(
+                proteinGoal: goalEntity.proteinGoal,
+                carbGoal: goalEntity.carbGoal,
+                fatGoal: goalEntity.fatGoal
+            )
+        }
+        return appState.getCurrentGoal()
+    }
 
     var body: some View {
         NavigationView {
@@ -190,7 +211,7 @@ struct SettingsView: View {
 
                         Spacer()
 
-                        Text("\(Int(appState.getCurrentGoal().proteinGoal))")
+                        Text("\(Int(currentGoal.proteinGoal))")
                             .foregroundColor(.primary)
 
                         Text("g")
@@ -204,7 +225,7 @@ struct SettingsView: View {
 
                         Spacer()
 
-                        Text("\(Int(appState.getCurrentGoal().carbGoal))")
+                        Text("\(Int(currentGoal.carbGoal))")
                             .foregroundColor(.primary)
 
                         Text("g")
@@ -218,7 +239,7 @@ struct SettingsView: View {
 
                         Spacer()
 
-                        Text("\(Int(appState.getCurrentGoal().fatGoal))")
+                        Text("\(Int(currentGoal.fatGoal))")
                             .foregroundColor(.primary)
 
                         Text("g")
@@ -425,7 +446,6 @@ struct SettingsView: View {
                     .environment(\.managedObjectContext, viewContext)
             }
             .sheet(isPresented: $showEditGoals) {
-                let currentGoal = appState.getCurrentGoal()
                 EditGoalsSheet(
                     initialProtein: currentGoal.proteinGoal,
                     initialCarbs: currentGoal.carbGoal,
@@ -433,6 +453,10 @@ struct SettingsView: View {
                 )
                 .environmentObject(appState)
                 .environment(\.managedObjectContext, viewContext)
+            }
+            .onChange(of: defaultGoals.first?.updatedAt) { _ in
+                // Force view refresh when goals are updated
+                refreshTrigger = UUID()
             }
             .alert(alertTitle, isPresented: $showingAlert) {
                 Button("OK", role: .cancel) { }

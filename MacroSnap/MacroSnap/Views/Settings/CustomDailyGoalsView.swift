@@ -157,6 +157,14 @@ struct CustomDailyGoalsView: View {
             .onAppear {
                 loadGoals(for: selectedDay)
             }
+            .onChange(of: getGoal(for: selectedDay)?.updatedAt) { _ in
+                // Reload when the current day's goal is updated (e.g., edited in Settings)
+                loadGoals(for: selectedDay)
+            }
+            .onChange(of: allGoals.map { $0.updatedAt }) { _ in
+                // Also reload when any goal changes (covers all edge cases)
+                loadGoals(for: selectedDay)
+            }
             .alert(alertTitle, isPresented: $showingAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
