@@ -464,6 +464,7 @@ struct SettingsView: View {
                 Text(alertMessage)
             }
         }
+        .navigationViewStyle(.stack)
     }
 
     // MARK: - Actions

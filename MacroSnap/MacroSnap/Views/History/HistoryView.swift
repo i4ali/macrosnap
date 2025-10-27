@@ -102,6 +102,7 @@ struct HistoryView: View {
                 Text("Get access to your complete macro history with MacroSnap Pro!")
             }
         }
+        .navigationViewStyle(.stack)
     }
 
     // MARK: - View Mode Picker
