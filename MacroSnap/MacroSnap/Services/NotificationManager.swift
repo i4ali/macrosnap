@@ -221,9 +221,13 @@ class NotificationManager: ObservableObject {
                 }
             }
 
-            // Calculate streak
+            // Calculate streak - start from yesterday if no entries today (give benefit of the doubt)
+            let today = calendar.startOfDay(for: Date())
+            let hasLoggedToday = daysWithEntries.contains(today)
+
+            // Start counting from today if logged, otherwise from yesterday
+            var currentDate = hasLoggedToday ? today : calendar.date(byAdding: .day, value: -1, to: today)!
             var streak = 0
-            var currentDate = calendar.startOfDay(for: Date())
 
             while daysWithEntries.contains(currentDate) {
                 streak += 1
