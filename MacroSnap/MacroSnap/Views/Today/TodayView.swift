@@ -12,6 +12,8 @@ struct TodayView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.managedObjectContext) private var viewContext
     @State private var showQuickLog = false
+    @State private var shareImage: UIImage?
+    @State private var showShareSheet = false
 
     // Fetch today's entries from CoreData
     @FetchRequest private var coreDataEntries: FetchedResults<MacroEntryEntity>
@@ -78,6 +80,14 @@ struct TodayView: View {
                         Text(Date().formatted(date: .abbreviated, time: .omitted))
                             .font(.headline)
                             .foregroundColor(.secondary)
+
+                        // Share button
+                        Button(action: shareProgress) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.title3)
+                                .foregroundColor(.blue)
+                                .padding(.leading, 8)
+                        }
                     }
                     .padding(.horizontal)
                     .padding(.top, 8)
@@ -153,12 +163,76 @@ struct TodayView: View {
         .sheet(isPresented: $showQuickLog) {
             QuickLogSheet()
         }
+        .onChange(of: shareImage) { image in
+            if image != nil {
+                showShareSheet = true
+            }
+        }
     }
 
     // MARK: - Actions
 
     private func handleAddEntry() {
         showQuickLog = true
+    }
+
+    private func shareProgress() {
+        print("📸 Generating progress snapshot...")
+
+        // Generate snapshot image
+        let image = ProgressSnapshotGenerator.shared.generateSnapshot(
+            proteinCurrent: totalProtein,
+            proteinGoal: goal.proteinGoal,
+            carbsCurrent: totalCarbs,
+            carbsGoal: goal.carbGoal,
+            fatCurrent: totalFat,
+            fatGoal: goal.fatGoal,
+            date: Date(),
+            entryCount: todayEntries.count,
+            theme: appState.themeManager.currentTheme
+        )
+
+        if let image = image {
+            print("✅ Snapshot generated successfully")
+            shareImage = image
+            presentShareSheet(for: image)
+        } else {
+            print("❌ Failed to generate snapshot")
+        }
+    }
+
+    private func presentShareSheet(for image: UIImage) {
+        print("📤 Presenting share sheet...")
+
+        // Get the active window scene
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            print("❌ Could not find root view controller")
+            return
+        }
+
+        // Find the topmost view controller
+        var topController = rootViewController
+        while let presented = topController.presentedViewController {
+            topController = presented
+        }
+
+        print("📤 Found top view controller: \(type(of: topController))")
+
+        // Create activity view controller
+        let activityVC = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+
+        // For iPad - set source view
+        if let popover = activityVC.popoverPresentationController {
+            popover.sourceView = topController.view
+            popover.sourceRect = CGRect(x: topController.view.bounds.midX, y: topController.view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+
+        print("📤 Presenting UIActivityViewController...")
+        topController.present(activityVC, animated: true) {
+            print("✅ Share sheet presented successfully")
+        }
     }
 }
 
