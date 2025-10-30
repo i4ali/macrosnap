@@ -125,7 +125,7 @@ struct SettingsView: View {
                     Text(storeManager.isPro ? "Subscription" : "Pro Features")
                 } footer: {
                     if !storeManager.isPro {
-                        Text("Get unlimited history, notes, presets, themes, and more with a one-time purchase.")
+                        Text("Get unlimited history, unlimited presets, custom themes, and more with a one-time purchase.")
                     }
                 }
 
@@ -140,15 +140,9 @@ struct SettingsView: View {
                             )
 
                             ProFeatureRow(
-                                icon: "note.text",
-                                title: "Notes & Meal Names",
-                                description: "Add context to your entries"
-                            )
-
-                            ProFeatureRow(
                                 icon: "square.stack.3d.up",
-                                title: "Macro Presets",
-                                description: "Save & reuse favorite meals"
+                                title: "Unlimited Macro Presets",
+                                description: "Save unlimited presets (free: 2)"
                             )
 
                             ProFeatureRow(
@@ -411,7 +405,7 @@ struct SettingsView: View {
                         Text("Version")
                             .foregroundColor(.secondary)
                         Spacer()
-                        Text("1.0.0")
+                        Text("1.1.0")
                             .foregroundColor(.primary)
                     }
 
@@ -419,7 +413,7 @@ struct SettingsView: View {
                         Text("Build")
                             .foregroundColor(.secondary)
                         Spacer()
-                        Text("1")
+                        Text("2")
                             .foregroundColor(.secondary)
                             .font(.caption)
                     }

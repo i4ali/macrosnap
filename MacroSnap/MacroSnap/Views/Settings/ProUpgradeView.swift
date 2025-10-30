@@ -53,15 +53,9 @@ struct ProUpgradeView: View {
                         )
 
                         ProFeatureRow(
-                            icon: "note.text",
-                            title: "Notes & Meal Names",
-                            description: "Add notes and names to your macro entries"
-                        )
-
-                        ProFeatureRow(
                             icon: "square.stack.3d.up",
-                            title: "Macro Presets",
-                            description: "Save and reuse your favorite meals"
+                            title: "Unlimited Macro Presets",
+                            description: "Save unlimited presets (free: 2 presets)"
                         )
 
                         ProFeatureRow(

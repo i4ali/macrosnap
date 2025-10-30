@@ -92,108 +92,83 @@ struct QuickLogSheet: View {
                     onTap: { focusedField = .fat }
                 )
 
-                // MARK: - Notes Field (Pro Feature)
-                if storeManager.isPro {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "note.text")
-                                .foregroundColor(.orange)
-                                .font(.caption)
-                            Text("Notes (Optional)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                // MARK: - Notes Field (Free Feature as of v1.1)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "note.text")
+                            .foregroundColor(.orange)
+                            .font(.caption)
+                        Text("Notes (Optional)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
 
-                            Spacer()
+                        Spacer()
 
-                            Text("\(notesText.count)/100")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-
-                        TextField("Meal name or notes", text: $notesText)
-                            .textFieldStyle(.roundedBorder)
-                            .onChange(of: notesText) { newValue in
-                                // Limit to 100 characters
-                                if newValue.count > 100 {
-                                    notesText = String(newValue.prefix(100))
-                                }
-                            }
+                        Text("\(notesText.count)/100")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
                     }
-                } else {
-                    // Pro Upgrade prompt for notes
-                    Button(action: {
-                        showProUpgrade = true
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "note.text")
-                                .foregroundColor(.orange)
 
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Add Notes")
-                                    .font(.subheadline)
-                                    .foregroundColor(.primary)
-                                Text("Pro feature")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                    TextField("Meal name or notes", text: $notesText)
+                        .textFieldStyle(.roundedBorder)
+                        .onChange(of: notesText) { newValue in
+                            // Limit to 100 characters
+                            if newValue.count > 100 {
+                                notesText = String(newValue.prefix(100))
                             }
-
-                            Spacer()
-
-                            Image(systemName: "lock.fill")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
-                        .padding()
-                        .background(Color.orange.opacity(0.1))
-                        .cornerRadius(8)
-                    }
-                    .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal)
             .padding(.bottom, 16)
 
-            // MARK: - Preset Buttons (Pro Feature)
-            if storeManager.isPro {
-                HStack(spacing: 12) {
-                    // Load Preset
-                    Button(action: {
-                        showPresetLibrary = true
-                    }) {
-                        HStack {
-                            Image(systemName: "square.stack.3d.up")
-                            Text("Load Preset")
-                                .font(.subheadline)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(Color.blue.opacity(0.1))
-                        .foregroundColor(.blue)
-                        .cornerRadius(8)
+            // MARK: - Preset Buttons (Free Feature as of v1.1 - limited to 2 for free users)
+            HStack(spacing: 12) {
+                // Load Preset
+                Button(action: {
+                    showPresetLibrary = true
+                }) {
+                    HStack {
+                        Image(systemName: "square.stack.3d.up")
+                        Text("Load Preset")
+                            .font(.subheadline)
                     }
-
-                    // Save Preset
-                    Button(action: {
-                        if canSavePreset {
-                            showSavePreset = true
-                        }
-                    }) {
-                        HStack {
-                            Image(systemName: "plus.square")
-                            Text("Save Preset")
-                                .font(.subheadline)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(Color.green.opacity(0.1))
-                        .foregroundColor(canSavePreset ? .green : .secondary)
-                        .cornerRadius(8)
-                    }
-                    .disabled(!canSavePreset)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.blue.opacity(0.1))
+                    .foregroundColor(.blue)
+                    .cornerRadius(8)
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 16)
+
+                // Save Preset
+                Button(action: {
+                    if canSavePreset {
+                        // Check preset limit for free users
+                        let presetCheck = storeManager.canCreatePreset(context: viewContext)
+                        if presetCheck.canCreate {
+                            showSavePreset = true
+                        } else {
+                            // Show upgrade prompt for free users who hit the limit
+                            alertMessage = presetCheck.message ?? "Cannot create preset"
+                            showingAlert = true
+                        }
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: "plus.square")
+                        Text("Save Preset")
+                            .font(.subheadline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.green.opacity(0.1))
+                    .foregroundColor(canSavePreset ? .green : .secondary)
+                    .cornerRadius(8)
+                }
+                .disabled(!canSavePreset)
             }
+            .padding(.horizontal)
+            .padding(.bottom, 16)
 
             // MARK: - Custom Numeric Keypad
             CustomNumericKeypad { key in
@@ -291,13 +266,13 @@ struct QuickLogSheet: View {
             return
         }
 
-        // Create new entry (with notes if Pro user)
+        // Create new entry (with notes if provided)
         let entry = MacroEntry(
             date: Date(),
             protein: protein,
             carbs: carbs,
             fat: fat,
-            notes: storeManager.isPro && !notesText.isEmpty ? notesText : nil
+            notes: !notesText.isEmpty ? notesText : nil
         )
 
         // Save to CoreData
@@ -450,6 +425,7 @@ struct SavePresetFromLogView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.managedObjectContext) private var viewContext
     @EnvironmentObject var appState: AppState
+    @StateObject private var storeManager = StoreManager.shared
 
     let protein: Double
     let carbs: Double
@@ -516,6 +492,14 @@ struct SavePresetFromLogView: View {
 
     private func savePreset() {
         guard !name.isEmpty else { return }
+
+        // Check preset limit for free users
+        let presetCheck = storeManager.canCreatePreset(context: viewContext)
+        if !presetCheck.canCreate {
+            alertMessage = presetCheck.message ?? "Cannot create preset"
+            showingAlert = true
+            return
+        }
 
         let preset = PresetEntity(
             context: viewContext,

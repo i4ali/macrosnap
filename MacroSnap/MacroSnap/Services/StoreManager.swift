@@ -8,6 +8,7 @@
 import Foundation
 import StoreKit
 import Combine
+import CoreData
 
 // Product ID for Pro purchase
 enum ProductID: String, CaseIterable {
@@ -167,6 +168,23 @@ class StoreManager: ObservableObject {
         case .verified(let safe):
             return safe
         }
+    }
+
+    // MARK: - Preset Limit Management
+
+    /// Check if user can create a new preset (free users limited to 2, Pro users unlimited)
+    func canCreatePreset(context: NSManagedObjectContext) -> (canCreate: Bool, message: String?) {
+        if isPro {
+            return (true, nil)
+        }
+
+        let fetchRequest: NSFetchRequest<PresetEntity> = PresetEntity.fetchRequest()
+        let count = (try? context.count(for: fetchRequest)) ?? 0
+
+        if count >= 2 {
+            return (false, "Free users can save up to 2 presets. Upgrade to Pro for unlimited presets.")
+        }
+        return (true, nil)
     }
 }
 

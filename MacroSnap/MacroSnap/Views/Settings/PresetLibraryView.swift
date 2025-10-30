@@ -12,6 +12,7 @@ struct PresetLibraryView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.managedObjectContext) private var viewContext
     @EnvironmentObject var appState: AppState
+    @StateObject private var storeManager = StoreManager.shared
 
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \PresetEntity.name, ascending: true)],
@@ -24,17 +25,40 @@ struct PresetLibraryView: View {
     @State private var selectedPreset: PresetEntity?
     @State private var showingDeleteAlert = false
     @State private var presetToDelete: PresetEntity?
+    @State private var showingLimitAlert = false
 
     // Optional: callback when preset is selected (for Quick Log)
     var onPresetSelected: ((MacroPreset) -> Void)?
 
     var body: some View {
         NavigationView {
-            Group {
-                if presets.isEmpty {
-                    emptyState
-                } else {
-                    presetList
+            VStack(spacing: 0) {
+                // MARK: - Preset Counter (for free users)
+                if !storeManager.isPro && !presets.isEmpty {
+                    HStack {
+                        Text("\(presets.count) of 2 presets")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        Spacer()
+
+                        if presets.count >= 2 {
+                            Text("Upgrade for unlimited")
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(Color(.systemGray6))
+                }
+
+                Group {
+                    if presets.isEmpty {
+                        emptyState
+                    } else {
+                        presetList
+                    }
                 }
             }
             .navigationTitle("Macro Presets")
@@ -48,7 +72,13 @@ struct PresetLibraryView: View {
 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        showingAddPreset = true
+                        // Check preset limit before showing add sheet
+                        let presetCheck = storeManager.canCreatePreset(context: viewContext)
+                        if presetCheck.canCreate {
+                            showingAddPreset = true
+                        } else {
+                            showingLimitAlert = true
+                        }
                     }) {
                         Image(systemName: "plus")
                     }
@@ -74,6 +104,11 @@ struct PresetLibraryView: View {
             } message: {
                 Text("This preset will be permanently deleted.")
             }
+            .alert("Preset Limit Reached", isPresented: $showingLimitAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Free users can save up to 2 presets. Upgrade to Pro for unlimited presets.")
+            }
         }
     }
 
@@ -96,7 +131,13 @@ struct PresetLibraryView: View {
                 .padding(.horizontal)
 
             Button(action: {
-                showingAddPreset = true
+                // Check preset limit before showing add sheet
+                let presetCheck = storeManager.canCreatePreset(context: viewContext)
+                if presetCheck.canCreate {
+                    showingAddPreset = true
+                } else {
+                    showingLimitAlert = true
+                }
             }) {
                 Label("Create Preset", systemImage: "plus.circle.fill")
                     .font(.headline)
