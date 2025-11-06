@@ -34,6 +34,12 @@ struct QuickLogSheet: View {
     @State private var showPresetLibrary = false
     @State private var showSavePreset = false
 
+    // Barcode scanner states
+    @State private var showBarcodeScanner = false
+    @State private var scannedProduct: FoodProduct?
+    @State private var isLoadingProduct = false
+    @StateObject private var foodDatabase = FoodDatabaseService.shared
+
     var body: some View {
         VStack(spacing: 0) {
             // MARK: - Header with Drag Handle
@@ -120,6 +126,62 @@ struct QuickLogSheet: View {
                 }
             }
             .padding(.horizontal)
+
+            // MARK: - Scanned Product Indicator
+            if let product = scannedProduct {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.subheadline)
+
+                    Text("Found: \(product.name)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+
+                    Spacer()
+
+                    Button(action: {
+                        clearScannedProduct()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                            .font(.subheadline)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(Color.green.opacity(0.1))
+                .cornerRadius(8)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+            }
+
+            // MARK: - Barcode Scanner Button
+            Button(action: {
+                showBarcodeScanner = true
+            }) {
+                HStack(spacing: 8) {
+                    if isLoadingProduct {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "barcode.viewfinder")
+                    }
+
+                    Text(scannedProduct == nil ? "Scan Barcode" : "Scan Different Item")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+            .disabled(isLoadingProduct)
+            .padding(.horizontal)
             .padding(.bottom, 16)
 
             // MARK: - Preset Buttons (Free Feature as of v1.1 - limited to 2 for free users)
@@ -200,6 +262,18 @@ struct QuickLogSheet: View {
         } message: {
             Text(alertMessage)
         }
+        .sheet(isPresented: $showBarcodeScanner) {
+            BarcodeScannerView { barcode in
+                handleBarcodeScanned(barcode)
+            }
+        }
+        .overlay(
+            Group {
+                if isLoadingProduct {
+                    loadingOverlay
+                }
+            }
+        )
     }
 
     // MARK: - Computed Properties
@@ -291,6 +365,86 @@ struct QuickLogSheet: View {
         proteinText = String(Int(preset.protein))
         carbsText = String(Int(preset.carbs))
         fatText = String(Int(preset.fat))
+    }
+
+    // MARK: - Barcode Scanner Actions
+
+    private func handleBarcodeScanned(_ barcode: String) {
+        showBarcodeScanner = false
+        isLoadingProduct = true
+
+        Task {
+            do {
+                let product = try await foodDatabase.lookupByBarcode(barcode)
+                await MainActor.run {
+                    scannedProduct = product
+                    autoFillFromProduct(product)
+                    isLoadingProduct = false
+
+                    // Provide haptic feedback
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.success)
+                }
+            } catch {
+                await MainActor.run {
+                    isLoadingProduct = false
+                    handleProductLookupError(error)
+                }
+            }
+        }
+    }
+
+    private func autoFillFromProduct(_ product: FoodProduct) {
+        // Fill in macro values
+        proteinText = String(Int(product.protein.rounded()))
+        carbsText = String(Int(product.carbs.rounded()))
+        fatText = String(Int(product.fat.rounded()))
+
+        // Fill in notes with product name (if field is empty)
+        if notesText.isEmpty {
+            notesText = product.displayName
+        }
+    }
+
+    private func clearScannedProduct() {
+        withAnimation {
+            scannedProduct = nil
+        }
+    }
+
+    private func handleProductLookupError(_ error: Error) {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+
+        if let dbError = error as? FoodDatabaseError {
+            alertMessage = dbError.errorDescription ?? "Failed to lookup product"
+        } else {
+            alertMessage = "Failed to lookup product: \(error.localizedDescription)"
+        }
+        showingAlert = true
+    }
+
+    // MARK: - Loading Overlay
+
+    private var loadingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+
+            VStack(spacing: 16) {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .scaleEffect(1.5)
+
+                Text("Looking up product...")
+                    .font(.subheadline)
+                    .foregroundColor(.primary)
+            }
+            .padding(24)
+            .background(Color(.systemBackground))
+            .cornerRadius(16)
+            .shadow(radius: 10)
+        }
     }
 
     private func saveEntry(_ entry: MacroEntry) {
